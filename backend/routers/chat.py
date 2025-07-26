@@ -6,14 +6,15 @@ from services.chat_service import (
     add_message_to_conversation,
     create_conversation
 )
-from services.ai_service import generate_ai_response
+from services.groq_services import GroqService
 from utils.database import get_db
 from bson import ObjectId
 from typing import Optional
 
 router = APIRouter()
+groq_service = GroqService()
 
-@router.post("/chat", response_model=Conversation)
+@router.post("", response_model=Conversation)
 async def chat(
     user_message: str,
     user_id: str,
@@ -21,12 +22,8 @@ async def chat(
     db=Depends(get_db)
 ):
     """
-    Primary chat endpoint that:
-    - Accepts user messages
-    - Generates AI responses
-    - Persists both to database
+    Primary chat endpoint with LLM integration
     """
-    
     # Validate user_id
     if not ObjectId.is_valid(user_id):
         raise HTTPException(status_code=400, detail="Invalid user ID")
@@ -53,9 +50,9 @@ async def chat(
         db, conversation_id, user_msg
     )
     
-    # Generate AI response
-    ai_response = await generate_ai_response(
-        user_message, 
+    # Generate AI response with Groq
+    ai_response = await groq_service.generate_response(
+        user_message,
         conversation.messages
     )
     
