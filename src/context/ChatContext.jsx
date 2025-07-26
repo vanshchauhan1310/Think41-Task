@@ -1,4 +1,7 @@
-import React, { createContext, useContext, useReducer } from 'react';
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
+
+// Placeholder user ID (replace with real auth/user logic as needed)
+const USER_ID = 'demo-user-123';
 
 // Initial state
 const initialState = {
@@ -7,32 +10,7 @@ const initialState = {
   ],
   loading: false,
   input: '',
-  conversations: [
-    {
-      id: '1',
-      title: 'Product Inquiry',
-      timestamp: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-      messages: [
-        { from: 'bot', text: 'Hi! How can I help you today?' },
-        { from: 'user', text: 'I need help finding a t-shirt' },
-        { from: 'bot', text: 'I can help you find the perfect t-shirt! What size and color are you looking for?' },
-        { from: 'user', text: 'Large, blue' },
-        { from: 'bot', text: 'Great! I found several blue t-shirts in large size. Would you like me to show you the options?' }
-      ]
-    },
-    {
-      id: '2',
-      title: 'Order Status',
-      timestamp: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-      messages: [
-        { from: 'bot', text: 'Hi! How can I help you today?' },
-        { from: 'user', text: 'I want to check my order status' },
-        { from: 'bot', text: 'I can help you check your order status. Please provide your order number.' },
-        { from: 'user', text: 'ORD-12345' },
-        { from: 'bot', text: 'Your order ORD-12345 is currently being processed and will be shipped within 2-3 business days.' }
-      ]
-    }
-  ],
+  conversations: [],
   currentConversationId: null
 };
 
@@ -46,7 +24,8 @@ const ACTIONS = {
   SET_CONVERSATIONS: 'SET_CONVERSATIONS',
   ADD_CONVERSATION: 'ADD_CONVERSATION',
   LOAD_CONVERSATION: 'LOAD_CONVERSATION',
-  START_NEW_CONVERSATION: 'START_NEW_CONVERSATION'
+  START_NEW_CONVERSATION: 'START_NEW_CONVERSATION',
+  SET_CURRENT_CONVERSATION_ID: 'SET_CURRENT_CONVERSATION_ID'
 };
 
 // Reducer function
@@ -54,64 +33,114 @@ const chatReducer = (state, action) => {
   switch (action.type) {
     case ACTIONS.SET_MESSAGES:
       return { ...state, messages: action.payload };
-    
     case ACTIONS.ADD_MESSAGE:
-      return { 
-        ...state, 
-        messages: [...state.messages, action.payload] 
-      };
-    
+      return { ...state, messages: [...state.messages, action.payload] };
     case ACTIONS.SET_LOADING:
       return { ...state, loading: action.payload };
-    
     case ACTIONS.SET_INPUT:
       return { ...state, input: action.payload };
-    
     case ACTIONS.CLEAR_INPUT:
       return { ...state, input: '' };
-    
     case ACTIONS.SET_CONVERSATIONS:
       return { ...state, conversations: action.payload };
-    
     case ACTIONS.ADD_CONVERSATION:
-      return { 
-        ...state, 
-        conversations: [action.payload, ...state.conversations] 
-      };
-    
+      return { ...state, conversations: [action.payload, ...state.conversations] };
     case ACTIONS.LOAD_CONVERSATION:
-      return { 
-        ...state, 
+      return {
+        ...state,
         messages: action.payload.messages,
         currentConversationId: action.payload.id
       };
-    
     case ACTIONS.START_NEW_CONVERSATION:
-      return { 
-        ...state, 
+      return {
+        ...state,
         messages: [{ from: 'bot', text: 'Hi! How can I help you today?' }],
         currentConversationId: null
       };
-    
+    case ACTIONS.SET_CURRENT_CONVERSATION_ID:
+      return { ...state, currentConversationId: action.payload };
     default:
       return state;
   }
 };
 
-// Create context
 const ChatContext = createContext();
 
-// Provider component
 export const ChatProvider = ({ children }) => {
   const [state, dispatch] = useReducer(chatReducer, initialState);
 
-  // Actions
-  const addMessage = (message) => {
-    dispatch({ type: ACTIONS.ADD_MESSAGE, payload: message });
+  // Fetch all conversations for the user on mount
+  useEffect(() => {
+    fetchConversations();
+  }, []);
+
+  // Fetch conversations from backend
+  const fetchConversations = async () => {
+    try {
+      const res = await fetch(`http://localhost:8000/api/conversations/user/${USER_ID}`);
+      const data = await res.json();
+      dispatch({ type: ACTIONS.SET_CONVERSATIONS, payload: data });
+    } catch (err) {
+      // Optionally handle error
+      dispatch({ type: ACTIONS.SET_CONVERSATIONS, payload: [] });
+    }
   };
 
-  const setLoading = (loading) => {
-    dispatch({ type: ACTIONS.SET_LOADING, payload: loading });
+  // Load a specific conversation from backend
+  const loadConversation = async (conversation) => {
+    try {
+      const res = await fetch(`http://localhost:8000/api/conversations/${conversation.id}`);
+      const data = await res.json();
+      dispatch({ type: ACTIONS.LOAD_CONVERSATION, payload: data });
+    } catch (err) {
+      // Optionally handle error
+    }
+  };
+
+  // Start a new conversation
+  const startNewConversation = async () => {
+    try {
+      const res = await fetch(`http://localhost:8000/api/conversations/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: USER_ID })
+      });
+      const data = await res.json();
+      dispatch({ type: ACTIONS.START_NEW_CONVERSATION });
+      dispatch({ type: ACTIONS.SET_CURRENT_CONVERSATION_ID, payload: data.id });
+      fetchConversations();
+    } catch (err) {
+      dispatch({ type: ACTIONS.START_NEW_CONVERSATION });
+    }
+  };
+
+  // Send a message to the backend chat API
+  const sendMessage = async (messageText) => {
+    if (!messageText.trim()) return;
+    dispatch({ type: ACTIONS.SET_LOADING, payload: true });
+    const userMessage = { from: 'user', text: messageText };
+    dispatch({ type: ACTIONS.ADD_MESSAGE, payload: userMessage });
+    dispatch({ type: ACTIONS.CLEAR_INPUT });
+    try {
+      const res = await fetch(`http://localhost:8000/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_message: messageText,
+          user_id: USER_ID,
+          conversation_id: state.currentConversationId
+        })
+      });
+      const data = await res.json();
+      // The backend returns the updated conversation, so update messages and conversation id
+      dispatch({ type: ACTIONS.SET_MESSAGES, payload: data.messages });
+      dispatch({ type: ACTIONS.SET_CURRENT_CONVERSATION_ID, payload: data.id });
+      fetchConversations();
+    } catch (err) {
+      dispatch({ type: ACTIONS.ADD_MESSAGE, payload: { from: 'bot', text: 'Error contacting server.' } });
+    } finally {
+      dispatch({ type: ACTIONS.SET_LOADING, payload: false });
+    }
   };
 
   const setInput = (input) => {
@@ -122,61 +151,15 @@ export const ChatProvider = ({ children }) => {
     dispatch({ type: ACTIONS.CLEAR_INPUT });
   };
 
-  const loadConversation = (conversation) => {
-    dispatch({ type: ACTIONS.LOAD_CONVERSATION, payload: conversation });
-  };
-
-  const startNewConversation = () => {
-    dispatch({ type: ACTIONS.START_NEW_CONVERSATION });
-  };
-
-  const saveCurrentConversation = (title) => {
-    if (state.messages.length <= 1) return; // Don't save if only welcome message
-    
-    const newConversation = {
-      id: Date.now().toString(),
-      title: title || `Conversation ${state.conversations.length + 1}`,
-      timestamp: new Date().toISOString(),
-      messages: state.messages
-    };
-    
-    dispatch({ type: ACTIONS.ADD_CONVERSATION, payload: newConversation });
-  };
-
-  const sendMessage = async (messageText) => {
-    if (!messageText.trim()) return;
-
-    // Add user message
-    const userMessage = { from: 'user', text: messageText };
-    addMessage(userMessage);
-    clearInput();
-    setLoading(true);
-
-    try {
-      const res = await fetch('http://localhost:5000/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: messageText }),
-      });
-      const data = await res.json();
-      addMessage({ from: 'bot', text: data.reply });
-    } catch (err) {
-      addMessage({ from: 'bot', text: 'Error contacting server.' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const value = {
     ...state,
-    addMessage,
-    setLoading,
     setInput,
     clearInput,
     sendMessage,
     loadConversation,
     startNewConversation,
-    saveCurrentConversation
+    fetchConversations,
+    USER_ID
   };
 
   return (
@@ -186,11 +169,10 @@ export const ChatProvider = ({ children }) => {
   );
 };
 
-// Custom hook to use the chat context
 export const useChat = () => {
   const context = useContext(ChatContext);
   if (!context) {
     throw new Error('useChat must be used within a ChatProvider');
   }
   return context;
-}; 
+};

@@ -2,18 +2,18 @@ import React from 'react';
 import { useChat } from '../context/ChatContext';
 
 const ConversationHistory = () => {
-  const { 
-    conversations, 
-    currentConversationId, 
-    loadConversation, 
-    startNewConversation 
+  const {
+    conversations,
+    currentConversationId,
+    loadConversation,
+    startNewConversation,
+    fetchConversations
   } = useChat();
 
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
     const now = new Date();
     const diffInHours = (now - date) / (1000 * 60 * 60);
-    
     if (diffInHours < 24) {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } else if (diffInHours < 48) {
@@ -23,12 +23,14 @@ const ConversationHistory = () => {
     }
   };
 
-  const handleConversationClick = (conversation) => {
-    loadConversation(conversation);
+  const handleConversationClick = async (conversation) => {
+    await loadConversation(conversation);
+    fetchConversations();
   };
 
-  const handleNewConversation = () => {
-    startNewConversation();
+  const handleNewConversation = async () => {
+    await startNewConversation();
+    fetchConversations();
   };
 
   return (
@@ -42,7 +44,6 @@ const ConversationHistory = () => {
           New Chat
         </button>
       </div>
-      
       <div className="space-y-2">
         {conversations.map((conversation) => (
           <div
@@ -55,20 +56,19 @@ const ConversationHistory = () => {
             }`}
           >
             <div className="font-medium text-sm text-gray-800 truncate">
-              {conversation.title}
+              {conversation.title || `Conversation ${conversation.id}`}
             </div>
             <div className="text-xs text-gray-500 mt-1">
               {formatDate(conversation.timestamp)}
             </div>
             <div className="text-xs text-gray-600 mt-1 truncate">
-              {conversation.messages.length > 1 
+              {conversation.messages && conversation.messages.length > 1
                 ? `${conversation.messages.length - 1} messages`
                 : 'No messages yet'
               }
             </div>
           </div>
         ))}
-        
         {conversations.length === 0 && (
           <div className="text-center text-gray-500 text-sm py-4">
             No conversations yet
