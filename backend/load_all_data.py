@@ -259,7 +259,7 @@ def load_inventory_items(db, csv_file):
     
     print(f"✅ Inserted {total_rows} inventory items")
     
-    # Create indexes
+    # Create indexe
     collection.create_index('id', unique=True)
     collection.create_index('product_id')
     collection.create_index('distribution_center_id')
