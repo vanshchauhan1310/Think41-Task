@@ -1,42 +1,188 @@
-#root {
-  max-width: 1280px;
+/* App.css */
+
+/* Base layout */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f9f9f9;
+}
+
+.content {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+/* Navbar */
+/* Navbar Styles */
+.navbar {
+  background-color: #111827; /* Dark background */
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.navbar-links {
+  display: flex;
+  list-style: none;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-links li a {
+  text-decoration: none;
+  color: #e5e7eb;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.navbar-links li a:hover {
+  color: white;
+}
+
+.chat-toggle {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.chat-toggle:hover {
+  background-color: #1e40af;
+}
+
+/* Product List */
+.product-list {
+  max-width: 600px;
   margin: 0 auto;
-  padding: 2rem;
+}
+
+.product-list h2 {
   text-align: center;
+  margin-bottom: 1rem;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.product-list ul {
+  list-style: none;
+  padding: 0;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.product-list li {
+  background: white;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Chatbot */
+.chatbot-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 1000;
 }
 
-.card {
-  padding: 2em;
+.chatbot-toggle {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 3.5rem;
+  height: 3.5rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  transition: background-color 0.3s;
 }
 
-.read-the-docs {
-  color: #888;
+.chatbot-toggle:hover {
+  background-color: #1d4ed8;
+}
+
+.chat-window {
+  background: white;
+  border-radius: 10px;
+  width: 360px;
+  max-width: 90vw;
+  height: 420px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  margin-bottom: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.chat-window h3 {
+  background-color: #2563eb;
+  color: white;
+  margin: 0;
+  padding: 0.75rem;
+  font-size: 1rem;
+}
+
+.chat-window .chat-messages {
+  padding: 1rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.chat-window .chat-input {
+  display: flex;
+  border-top: 1px solid #ddd;
+  padding: 0.5rem;
+}
+
+.chat-window .chat-input input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-right: 0.5rem;
+}
+
+.chat-window .chat-input button {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 0 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.chat-window .chat-input button:hover {
+  background-color: #1e40af;
+}
+
+.chat-message {
+  margin-bottom: 0.5rem;
+  max-width: 80%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+}
+
+.chat-message.user {
+  background-color: #e0f2fe;
+  align-self: flex-end;
+}
+
+.chat-message.bot {
+  background-color: #f3f4f6;
+  align-self: flex-start;
 }
