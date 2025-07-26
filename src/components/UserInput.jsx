@@ -2,7 +2,13 @@ import React from 'react';
 
 const UserInput = ({ input, setInput, sendMessage }) => {
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') sendMessage();
+    if (e.key === 'Enter') {
+      sendMessage(input);
+    }
+  };
+
+  const handleSendClick = () => {
+    sendMessage(input);
   };
 
   return (
@@ -16,7 +22,7 @@ const UserInput = ({ input, setInput, sendMessage }) => {
         className="flex-1 px-3 py-2 border rounded focus:outline-none"
       />
       <button
-        onClick={sendMessage}
+        onClick={handleSendClick}
         className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
       >
         Send

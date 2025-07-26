@@ -1,36 +1,20 @@
-import React, { useState } from 'react';
+import React from 'react';
 import MessageList from './MessageList';
 import UserInput from './UserInput';
+import { useChat } from '../context/ChatContext';
 
 const ChatWindow = () => {
-  const [messages, setMessages] = useState([
-    { from: 'bot', text: 'Hi! How can I help you today?' }
-  ]);
-  const [input, setInput] = useState('');
-
-  const sendMessage = async () => {
-    if (!input.trim()) return;
-
-    const userMessage = { from: 'user', text: input };
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-
-    try {
-      const res = await fetch('http://localhost:5000/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: input }),
-      });
-      const data = await res.json();
-      setMessages(prev => [...prev, { from: 'bot', text: data.reply }]);
-    } catch (err) {
-      setMessages(prev => [...prev, { from: 'bot', text: 'Error contacting server.' }]);
-    }
-  };
+  const { messages, loading, input, setInput, sendMessage } = useChat();
 
   return (
     <div className="chat-window p-4 w-full max-w-md bg-white rounded shadow-md">
       <h3 className="font-semibold text-lg mb-2">Chat Support</h3>
+      {loading && (
+        <div className="text-center py-2 text-gray-600">
+          <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+          <span className="ml-2">AI is thinking...</span>
+        </div>
+      )}
       <MessageList messages={messages} />
       <UserInput input={input} setInput={setInput} sendMessage={sendMessage} />
     </div>
