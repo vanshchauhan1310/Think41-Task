@@ -1,12 +1,86 @@
-# React + Vite
+# Think41 Task: Full-Stack Chatbot Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Overview
+This project is a full-stack chatbot application with a React (Vite) frontend, FastAPI backend, and MongoDB database. It supports real-time chat, conversation history, and is fully containerized for easy deployment.
 
-Currently, two official plugins are available:
+## Features
+- Chat with AI (LLM integration)
+- Conversation history panel
+- User and order management
+- Full Docker support (backend, frontend, MongoDB)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Prerequisites
+- [Docker](https://www.docker.com/products/docker-desktop)
+- [Docker Compose](https://docs.docker.com/compose/)
 
-## Expanding the ESLint configuration
+## Quick Start (Recommended)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. **Clone the repository:**
+   ```sh
+   git clone https://github.com/vanshchauhan1310/Think41-Task.git
+   cd Think41-Task
+   ```
+
+2. **Start all services:**
+   ```sh
+   docker-compose up --build
+   ```
+   - This will build and start the backend (FastAPI), frontend (React), and MongoDB database.
+
+3. **Access the app:**
+   - Frontend: [http://localhost:3000](http://localhost:3000)
+   - Backend API: [http://localhost:8000/api/docs](http://localhost:8000/api/docs)
+   - MongoDB: `localhost:27017`
+
+## Project Structure
+```
+Think41-Task/
+  backend/         # FastAPI backend
+  src/             # React frontend (Vite)
+  docker-compose.yml
+  Dockerfile       # Frontend Dockerfile
+  README.md
+```
+
+## Environment Variables
+- The backend expects `MONGO_URL` (set automatically in docker-compose).
+- For local development, create a `.env` file in `backend/`:
+  ```env
+  MONGO_URL=mongodb://localhost:27017
+  ```
+
+## Useful Commands
+- **Build and start all services:**
+  ```sh
+  docker-compose up --build
+  ```
+- **Stop all services:**
+  ```sh
+  docker-compose down
+  ```
+- **Rebuild a single service:**
+  ```sh
+  docker-compose build backend
+  docker-compose build frontend
+  ```
+
+## Development (without Docker)
+- **Backend:**
+  ```sh
+  cd backend
+  pip install -r requirements.txt
+  uvicorn main:app --reload
+  ```
+- **Frontend:**
+  ```sh
+  npm install
+  npm run dev
+  ```
+
+## Troubleshooting
+- Ensure Docker Desktop is running.
+- If ports are in use, stop other services or change the ports in `docker-compose.yml`.
+- For MongoDB connection issues, check the `MONGO_URL` and that the `mongo` service is healthy.
+
+## License
+MIT
